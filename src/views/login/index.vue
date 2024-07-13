@@ -68,8 +68,8 @@
           @keyup.enter="handleLogin"
         />
 
-        <div class="captcha">
-          <img :src="captchaBase64" @click="getCaptcha" />
+        <div class="captcha" v-loading="imgLoading">
+          <img :src="verifyCodeBase64" @click="getCaptcha" />
         </div>
       </el-form-item>
 
@@ -103,10 +103,16 @@ import { useUserStore } from "@/store/modules/user";
 import { LocationQuery, LocationQueryValue, useRoute } from "vue-router";
 import { getCaptchaApi } from "@/api/auth";
 import { LoginData } from "@/api/auth/types";
+import { reactive, ref } from "vue";
+import { FormInstance, FormRules } from "element-plus";
 
 const userStore = useUserStore();
 const route = useRoute();
 
+// 定义一个响应式状态 `imgLoading` 来控制验证码图片的加载状态。
+// 当 `imgLoading` 为 true 时，表示验证码图片正在加载中，可以用来触发加载动画或显示加载提示。
+// 默认状态为 false，表示验证码图片不在加载状态。
+const imgLoading = ref(false);
 /**
  * 按钮loading
  */
@@ -122,7 +128,7 @@ const passwordVisible = ref(false);
 /**
  * 验证码图片Base64字符串
  */
-const captchaBase64 = ref();
+const verifyCodeBase64 = ref();
 
 /**
  * 登录表单引用
@@ -134,18 +140,18 @@ const loginData = ref<LoginData>({
   password: "123456",
 });
 
-const loginRules = {
-  username: [{ required: true, trigger: "blur" }],
+const loginRules = reactive<FormRules>({
+  username: [{ required: true, trigger: "blur", message: "请输入用户名" }],
   password: [{ required: true, trigger: "blur", validator: passwordValidator }],
-  verifyCode: [{ required: true, trigger: "blur" }],
-};
+  verifyCode: [{ required: true, trigger: "blur", message: "请输入验证码" }],
+});
 
 /**
  * 密码校验器
  */
 function passwordValidator(rule: any, value: any, callback: any) {
   if (value.length < 6) {
-    callback(new Error("The password can not be less than 6 digits"));
+    callback(new Error("密码长度不能小于6位"));
   } else {
     callback();
   }
@@ -163,11 +169,19 @@ function checkCapslock(e: any) {
  * 获取验证码
  */
 function getCaptcha() {
-  getCaptchaApi().then(({ data }) => {
-    const { verifyCodeBase64, verifyCodeKey } = data;
-    loginData.value.verifyCodeKey = verifyCodeKey;
-    captchaBase64.value = verifyCodeBase64;
-  });
+  imgLoading.value = true; // 防止多次点击 重复请求
+  getCaptchaApi()
+    .then(({ data }) => {
+      const { captchaBase64, captchaKey } = data;
+      loginData.value.captchaKey = captchaKey;
+      verifyCodeBase64.value = captchaBase64;
+    })
+    .catch(() => {
+      // 验证失败，重新生成验证码
+    })
+    .finally(() => {
+      imgLoading.value = false;
+    });
 }
 
 /**
@@ -180,21 +194,22 @@ function handleLogin() {
       userStore
         .login(loginData.value)
         .then(() => {
-          const query: LocationQuery = route.query;
-
-          const redirect = (query.redirect as LocationQueryValue) ?? "/";
-
+          const query: LocationQuery = route.query; // 获取路由参数
+          const redirect = (query.redirect as LocationQueryValue) ?? "/"; // 获取重定向地址
+          // 创建一个对象来存储除 'redirect' 外的所有查询参数
           const otherQueryParams = Object.keys(query).reduce(
+            // 使用 Array.prototype.reduce() 方法
             (acc: any, cur: string) => {
+              // 如果当前键不是 'redirect'，则将其添加到累加器对象中
               if (cur !== "redirect") {
                 acc[cur] = query[cur];
               }
+              // 返回累加器对象，供下一次迭代使用
               return acc;
             },
-            {}
+            {} // 初始值为空对象
           );
-
-          router.push({ path: redirect, query: otherQueryParams });
+          router.push({ path: redirect, query: otherQueryParams }); // 跳转到重定向地址
         })
         .catch(() => {
           // 验证失败，重新生成验证码
@@ -206,7 +221,7 @@ function handleLogin() {
     }
   });
 }
-
+// 在组件挂载后获取验证码
 onMounted(() => {
   getCaptcha();
 });
@@ -276,10 +291,10 @@ onMounted(() => {
 
     .el-input__inner {
       color: #fff;
+      caret-color: #fff;
       background: transparent;
       border: 0;
       border-radius: 0;
-      caret-color: #fff;
 
       &:-webkit-autofill {
         box-shadow: 0 0 0 1000px transparent inset !important;

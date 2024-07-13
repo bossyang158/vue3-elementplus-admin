@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import path from "path-browserify";
-import { isExternal } from "@/utils/index";
-import AppLink from "./Link.vue";
+import path from "path-browserify"; // 引入路径解析
+import { isExternal } from "@/utils/index"; // 引入工具函数
+import AppLink from "./Link.vue"; // 引入路由组件
 
 import { translateRouteTitleI18n } from "@/utils/i18n";
 import SvgIcon from "@/components/SvgIcon/index.vue";

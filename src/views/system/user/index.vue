@@ -19,34 +19,38 @@ import { listDeptOptions } from "@/api/dept";
 import { listRoleOptions } from "@/api/role";
 
 import { UserForm, UserQuery, UserPageVO } from "@/api/user/types";
+import { ref } from "vue";
 
 defineOptions({
-  name: "User",
-  inheritAttrs: false,
+  name: "User", // 组件名称 User
+  inheritAttrs: false, // 避免与父组件属性冲突
 });
 
 const deptTreeRef = ref(ElTree); // 部门树
 const queryFormRef = ref(ElForm); // 查询表单
 const userFormRef = ref(ElForm); // 用户表单
 
-const loading = ref(false);
-const ids = ref([]);
-const total = ref(0);
+const loading = ref(false); // 加载状态 默认不加载
+const ids = ref([]); // 选中id集合
+const total = ref(0); // 总条数
 const dialog = reactive<DialogOption>({
-  visible: false,
+  visible: false, // 弹窗显示状态 默认不显示
 });
 
 const queryParams = reactive<UserQuery>({
-  pageNum: 1,
-  pageSize: 10,
+  // 查询参数
+  pageNum: 1, // 当前页码
+  pageSize: 10, // 每页条数
 });
-const userList = ref<UserPageVO[]>();
+const userList = ref<UserPageVO[]>(); // 用户列表
 
 const formData = reactive<UserForm>({
-  status: 1,
+  // 表单数据
+  status: 1, // 状态 默认启用 1
 });
 
 const rules = reactive({
+  // 表单校验规则
   username: [{ required: true, message: "用户名不能为空", trigger: "blur" }],
   nickname: [{ required: true, message: "用户昵称不能为空", trigger: "blur" }],
   deptId: [{ required: true, message: "所属部门不能为空", trigger: "blur" }],
@@ -67,26 +71,30 @@ const rules = reactive({
   ],
 });
 
-const searchDeptName = ref();
-const deptList = ref<OptionType[]>();
-const roleList = ref<OptionType[]>();
+const searchDeptName = ref(); // 部门名称
+const deptList = ref<OptionType[]>(); // 部门列表
+const roleList = ref<OptionType[]>(); // 角色列表
 const importDialog = reactive<DialogOption>({
-  title: "用户导入",
-  visible: false,
+  // 导入弹窗
+  title: "用户导入", // 弹窗标题
+  visible: false, // 弹窗显示状态 默认不显示
 });
 
 /**
  * 导入选择的部门ID
  */
-const importDeptId = ref<number>();
-const excelFile = ref<File>();
-const excelFilelist = ref<File[]>([]);
+const importDeptId = ref<number>(); // 导入部门ID
+const excelFile = ref<File>(); // 导入文件
+const excelFilelist = ref<File[]>([]); // 导入文件列表
 
 watchEffect(
+  // 监听搜索部门名称的变化
   () => {
-    deptTreeRef.value.filter(searchDeptName.value);
+    // 监听搜索部门名称的变化
+    deptTreeRef.value.filter(searchDeptName.value); // 调用ElTree的filter方法 过滤部门树 传入搜索部门名称
   },
   {
+    // 配置
     flush: "post", // watchEffect会在DOM挂载或者更新之前就会触发，此属性控制在DOM元素更新后运行
   }
 );
@@ -96,17 +104,18 @@ watchEffect(
  */
 function handleDeptFilter(value: string, data: any) {
   if (!value) {
+    // 如果没有搜索条件
     return true;
   }
-  return data.label.indexOf(value) !== -1;
+  return data.label.indexOf(value) !== -1; // 如果搜索条件在部门名称中，返回true
 }
 
 /**
  * 部门树节点
  */
 function handleDeptNodeClick(data: { [key: string]: any }) {
-  queryParams.deptId = data.value;
-  handleQuery();
+  queryParams.deptId = data.value; // 设置部门ID
+  handleQuery(); // 查询 用户列表 重新加载数据 根据部门ID 查询用户列表
 }
 
 /**

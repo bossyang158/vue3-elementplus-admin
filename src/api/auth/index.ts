@@ -12,7 +12,7 @@ export function loginApi(data: LoginData): AxiosPromise<LoginResult> {
   const formData = new FormData();
   formData.append("username", data.username);
   formData.append("password", data.password);
-  formData.append("verifyCodeKey", data.verifyCodeKey || "");
+  formData.append("captchaKey", data.captchaKey || "");
   formData.append("verifyCode", data.verifyCode || "");
   return request({
     url: "/api/v1/auth/login",

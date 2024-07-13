@@ -53,8 +53,8 @@ const route = useRoute();
  * 切换布局
  */
 function changeLayout(layout: string) {
-  settingsStore.changeSetting({ key: "layout", value: layout });
-  window.document.body.setAttribute("layout", settingsStore.layout);
+  settingsStore.changeSetting({ key: "layout", value: layout }); // 设置布局 layout
+  window.document.body.setAttribute("layout", settingsStore.layout); // 设置布局 layout 样式
   if (layout === "mix") {
     route.name && againActiveTop(route.name as string);
   }

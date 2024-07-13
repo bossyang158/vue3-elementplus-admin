@@ -42,19 +42,19 @@ interface DefaultSettings {
 }
 
 const defaultSettings: DefaultSettings = {
-  title: "vue3-element-admin",
-  showSettings: true,
-  tagsView: true,
-  fixedHeader: false,
-  sidebarLogo: true,
-  layout: "mix",
+  title: "vue3-element-admin", // 系统title 默认值
+  showSettings: true, // 是否显示设置
+  tagsView: true, // 是否显示多标签导航
+  fixedHeader: false, // 是否固定头部
+  sidebarLogo: true, // 是否显示侧边栏Logo
+  layout: "left", // 默认布局 left | top | mix
   /**
    *  主题模式
    *
    * dark:暗黑模式
    * light: 明亮模式
    */
-  theme: "dark",
+  theme: "dark", // dark | light | auto
   size: "default", // default |large |small
   language: "zh-cn", // zh-cn| en
 };

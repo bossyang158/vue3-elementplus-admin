@@ -1,12 +1,11 @@
 <script lang="ts" setup>
-import { computed, watchEffect } from "vue";
-import { useWindowSize } from "@vueuse/core";
+import { computed, watchEffect } from "vue"; // 引入计算属性 watchEffect
+import { useWindowSize } from "@vueuse/core"; // 引入窗口大小 hook 函数 useWindowSize
 import { AppMain, Navbar, Settings, TagsView } from "./components/index";
-import RightPanel from "@/components/RightPanel/index.vue";
-
-import { useAppStore } from "@/store/modules/app";
-import { useSettingsStore } from "@/store/modules/settings";
-const { width } = useWindowSize();
+import RightPanel from "@/components/RightPanel/index.vue"; // 引入右侧面板组件
+import { useAppStore } from "@/store/modules/app"; // 引入应用状态管理
+import { useSettingsStore } from "@/store/modules/settings"; // 引入设置状态管理
+const { width } = useWindowSize(); // 引入窗口大小 hook 函数
 
 /**
  * 响应式布局容器固定宽度
@@ -15,28 +14,30 @@ const { width } = useWindowSize();
  * 中屏（>=992px）
  * 小屏（>=768px）
  */
-const WIDTH = 992;
+const WIDTH = 992; // 定义宽度 992
 
-const appStore = useAppStore();
-const settingsStore = useSettingsStore();
-
-const fixedHeader = computed(() => settingsStore.fixedHeader);
-const showTagsView = computed(() => settingsStore.tagsView);
-const showSettings = computed(() => settingsStore.showSettings);
-const layout = computed(() => settingsStore.layout);
+const appStore = useAppStore(); // 引入应用状态管理 useAppStore 函数  获取应用状态管理
+const settingsStore = useSettingsStore(); // 引入设置状态管理 useSettingsStore 函数
+const fixedHeader = computed(() => settingsStore.fixedHeader); // 获取设置状态管理 fixedHeader
+const showTagsView = computed(() => settingsStore.tagsView); // 获取设置状态管理 tagsView
+const showSettings = computed(() => settingsStore.showSettings); // 获取设置状态管理 showSettings
+const layout = computed(() => settingsStore.layout); // 获取设置状态管理 layout
 
 watchEffect(() => {
+  // 监听窗口大小变化
   if (width.value < WIDTH) {
-    appStore.toggleDevice("mobile");
-    appStore.closeSideBar(true);
+    // 判断窗口大小是否小于 992
+    appStore.toggleDevice("mobile"); // 调用应用状态管理 toggleDevice 函数
+    appStore.closeSideBar(true); // 调用应用状态管理 closeSideBar 函数 关闭侧边栏 true
   } else {
-    appStore.toggleDevice("desktop");
+    appStore.toggleDevice("desktop"); // 调用应用状态管理 toggleDevice 函数
 
     if (width.value >= 1200) {
+      // 判断窗口大小是否大于等于 1200
       //大屏
-      appStore.openSideBar(true);
+      appStore.openSideBar(true); // 调用应用状态管理 openSideBar 函数 打开侧边栏 true
     } else {
-      appStore.closeSideBar(true);
+      appStore.closeSideBar(true); // 调用应用状态管理 closeSideBar 函数 关闭侧边栏 true
     }
   }
 });

@@ -1,26 +1,26 @@
 /**
- * Check if an element has a class
- * @param {HTMLElement} ele
- * @param {string} cls
- * @returns {boolean}
+ * 检查元素是否包含某个类
+ * @param {HTMLElement} ele - 待检查的元素
+ * @param {string} cls - 类名
+ * @returns {boolean} - 如果元素包含该类，则返回true
  */
 export function hasClass(ele: HTMLElement, cls: string) {
   return !!ele.className.match(new RegExp("(\\s|^)" + cls + "(\\s|$)"));
 }
 
 /**
- * Add class to element
- * @param {HTMLElement} ele
- * @param {string} cls
+ * 为元素添加类
+ * @param {HTMLElement} ele - 目标元素
+ * @param {string} cls - 要添加的类名
  */
 export function addClass(ele: HTMLElement, cls: string) {
   if (!hasClass(ele, cls)) ele.className += " " + cls;
 }
 
 /**
- * Remove class from element
- * @param {HTMLElement} ele
- * @param {string} cls
+ * 从元素中移除类
+ * @param {HTMLElement} ele - 目标元素
+ * @param {string} cls - 要移除的类名
  */
 export function removeClass(ele: HTMLElement, cls: string) {
   if (hasClass(ele, cls)) {
@@ -30,8 +30,9 @@ export function removeClass(ele: HTMLElement, cls: string) {
 }
 
 /**
- * @param {string} path
- * @returns {Boolean}
+ * 检查路径是否为外部链接
+ * @param {string} path - 待检查的路径
+ * @returns {Boolean} - 如果是外部链接，则返回true
  */
 export function isExternal(path: string) {
   const isExternal = /^(https?:|http?:|mailto:|tel:)/.test(path);

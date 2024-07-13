@@ -1,61 +1,71 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 
-import { addClass, removeClass } from "@/utils/index";
+import { addClass, removeClass } from "@/utils/index"; // 引入工具函数
 
-const show = ref(false);
+const show = ref(false); // 是否显示右侧面板 默认不显示
 
 defineProps({
   buttonTop: {
+    // 按钮距离顶部距离 默认250
     default: 250,
     type: Number,
   },
 });
 
 watch(show, (value) => {
+  // 监听显示状态 变化 添加点击事件 或 移除点击事件
   if (value) {
-    addEventClick();
+    addEventClick(); // 添加点击事件
   }
   if (value) {
-    addClass(document.body, "showRightPanel");
+    addClass(document.body, "showRightPanel"); // 添加body样式 showRightPanel
   } else {
-    removeClass(document.body, "showRightPanel");
+    removeClass(document.body, "showRightPanel"); // 移除body样式 showRightPanel
   }
 });
 
 function addEventClick() {
-  window.addEventListener("click", closeSidebar, { passive: true });
+  // 添加点击事件 用于关闭右侧面板
+  window.addEventListener("click", closeSidebar, { passive: true }); // 添加点击事件 用于关闭右侧面板
 }
 
 function closeSidebar(evt: any) {
+  // 关闭右侧面板 用于点击事件
   // 主题选择点击不关闭
-  let parent = evt.target.closest(".right-panel-container");
+  let parent = evt.target.closest(".right-panel-container"); // 获取点击元素的最近的右侧面板容器 如果存在则不关闭
   if (!parent) {
-    show.value = false;
-    window.removeEventListener("click", closeSidebar);
+    // 如果不存在则关闭 右侧面板
+    show.value = false; // 关闭右侧面板
+    window.removeEventListener("click", closeSidebar); // 移除点击事件 用于点击事件 用于关闭右侧面板
   }
 }
 
-const rightPanel = ref();
+const rightPanel = ref(); // 右侧面板 ref 对象
 
 function insertToBody() {
-  const body = document.querySelector("body") as any;
-  body.insertBefore(rightPanel.value, body.firstChild);
+  // 插入到body 用于显示右侧面板
+  const body = document.querySelector("body") as any; // 获取body 元素
+  body.insertBefore(rightPanel.value, body.firstChild); // 插入到body 元素 第一个子元素 前面
 }
 
 onMounted(() => {
-  insertToBody();
+  insertToBody(); // 插入到body 用于显示右侧面板
 });
 
 onBeforeUnmount(() => {
-  rightPanel.value.remove();
+  rightPanel.value.remove(); // 移除点击事件 用于点击事件 用于关闭右侧面板
 });
 </script>
 
 <template>
+  <!-- 右侧面板，通过ref属性引用，用于后续的JS操作 -->
   <div ref="rightPanel" :class="{ show: show }">
+    <!-- 遮罩层，用于点击外部区域隐藏面板 -->
     <div class="right-panel-overlay"></div>
+    <!-- 面板容器，包含控制按钮和内容区域 -->
     <div class="right-panel-container">
+      <!-- 控制按钮，通过点击切换面板的显示状态 -->
       <div
         class="right-panel-btn"
         :style="{
@@ -63,9 +73,12 @@ onBeforeUnmount(() => {
         }"
         @click="show = !show"
       >
+        <!-- 当面板显示时，显示关闭图标 -->
         <i-ep-close v-show="show" />
+        <!-- 当面板隐藏时，显示设置图标 -->
         <i-ep-setting v-show="!show" />
       </div>
+      <!-- 内容区域，通过插槽动态注入内容 -->
       <div>
         <slot></slot>
       </div>

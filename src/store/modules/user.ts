@@ -8,22 +8,28 @@ import { store } from "@/store";
 import { LoginData } from "@/api/auth/types";
 import { UserInfo } from "@/api/user/types";
 
+/**
+ * 导入useStorage函数，用于在Vue组件中使用存储功能。
+ * @packageDocumentation
+ */
 import { useStorage } from "@vueuse/core";
 
+import { ref } from "vue";
+
 export const useUserStore = defineStore("user", () => {
-  // state
+  // 状态
   const userId = ref();
   const token = useStorage("accessToken", "");
   const nickname = ref("");
   const avatar = ref("");
-  const roles = ref<Array<string>>([]); // 用户角色编码集合 → 判断路由权限
-  const perms = ref<Array<string>>([]); // 用户权限编码集合 → 判断按钮权限
+  const roles = ref<Array<string>>([]); // 用户角色编码集合 → 用于判断路由权限
+  const perms = ref<Array<string>>([]); // 用户权限编码集合 → 用于判断按钮权限
 
   /**
-   * 登录调用
+   * 登录操作
    *
-   * @param {LoginData}
    * @returns
+   * @param loginData
    */
   function login(loginData: LoginData) {
     return new Promise<void>((resolve, reject) => {
@@ -39,16 +45,16 @@ export const useUserStore = defineStore("user", () => {
     });
   }
 
-  // 获取信息(用户昵称、头像、角色集合、权限集合)
+  // 获取用户信息(昵称、头像、角色集合、权限集合)
   function getInfo() {
     return new Promise<UserInfo>((resolve, reject) => {
       getUserInfo()
         .then(({ data }) => {
           if (!data) {
-            return reject("Verification failed, please Login again.");
+            return reject("验证失败，请重新登录。");
           }
           if (!data.roles || data.roles.length <= 0) {
-            reject("getUserInfo: roles must be a non-null array!");
+            reject("getUserInfo: roles 必须是非空数组！");
           }
           userId.value = data.userId;
           nickname.value = data.nickname;
@@ -63,7 +69,7 @@ export const useUserStore = defineStore("user", () => {
     });
   }
 
-  // 注销
+  // 注销操作
   function logout() {
     return new Promise<void>((resolve, reject) => {
       logoutApi()
@@ -79,7 +85,7 @@ export const useUserStore = defineStore("user", () => {
     });
   }
 
-  // 重置
+  // 重置token和用户信息
   function resetToken() {
     token.value = "";
     nickname.value = "";
@@ -104,7 +110,7 @@ export const useUserStore = defineStore("user", () => {
   };
 });
 
-// 非setup
+// 非setup方式使用store
 export function useUserStoreHook() {
   return useUserStore(store);
 }

@@ -1,17 +1,17 @@
 <script lang="ts" setup>
-import { useRoute } from "vue-router";
-import SidebarItem from "./SidebarItem.vue";
-import { useSettingsStore } from "@/store/modules/settings";
-import { useAppStore } from "@/store/modules/app";
-import variables from "@/styles/variables.module.scss";
+import { useRoute } from "vue-router"; // 引入路由钩子
+import SidebarItem from "./SidebarItem.vue"; // 引入侧边栏子组件
+import { useSettingsStore } from "@/store/modules/settings"; // 引入设置状态管理
+import { useAppStore } from "@/store/modules/app"; // 引入应用状态管理
+import variables from "@/styles/variables.module.scss"; // 引入样式变量
 
-import path from "path-browserify";
-import { isExternal } from "@/utils/index";
+import path from "path-browserify"; // 引入路径解析
+import { isExternal } from "@/utils/index"; // 引入工具函数
 
-const settingsStore = useSettingsStore();
-const appStore = useAppStore();
-const currRoute = useRoute();
-const layout = computed(() => settingsStore.layout);
+const settingsStore = useSettingsStore(); // 引入设置状态管理
+const appStore = useAppStore(); // 引入应用状态管理
+const currRoute = useRoute(); // 引入路由钩子
+const layout = computed(() => settingsStore.layout); // 引入设置状态管理
 const props = defineProps({
   menuList: {
     required: true,
@@ -33,10 +33,12 @@ const props = defineProps({
  */
 function resolvePath(routePath: string) {
   if (isExternal(routePath)) {
-    return routePath;
+    // 判断是否为外部链接
+    return routePath; // 返回外部链接
   }
   if (isExternal(props.basePath)) {
-    return props.basePath;
+    // 判断是否为外部链接
+    return props.basePath; // 返回外部链接
   }
 
   // 完整路径 = 父级路径(/level/level_3) + 路由路径

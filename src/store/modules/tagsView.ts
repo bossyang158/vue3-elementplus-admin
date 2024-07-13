@@ -1,17 +1,19 @@
 import { defineStore } from "pinia";
 import { RouteLocationNormalized } from "vue-router";
+import { ref } from "vue";
 
 export interface TagView extends Partial<RouteLocationNormalized> {
   title?: string;
 }
 
-// setup
+// 设置
 export const useTagsViewStore = defineStore("tagsView", () => {
-  // state
-  const visitedViews = ref<TagView[]>([]);
-  const cachedViews = ref<string[]>([]);
+  // 状态
+  const visitedViews = ref<TagView[]>([]); // 已访问视图
+  const cachedViews = ref<string[]>([]); // 缓存视图
 
-  // actions
+  // 动作
+  // 添加已访问视图
   function addVisitedView(view: TagView) {
     if (visitedViews.value.some((v) => v.path === view.path)) return;
     if (view.meta && view.meta.affix) {
@@ -29,6 +31,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     }
   }
 
+  // 添加缓存视图
   function addCachedView(view: TagView) {
     const viewName = view.name as string;
     if (cachedViews.value.includes(viewName)) return;
@@ -37,6 +40,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     }
   }
 
+  // 删除已访问视图
   function delVisitedView(view: TagView) {
     return new Promise((resolve) => {
       for (const [i, v] of visitedViews.value.entries()) {
@@ -49,6 +53,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     });
   }
 
+  // 删除缓存视图
   function delCachedView(view: TagView) {
     const viewName = view.name as string;
     return new Promise((resolve) => {
@@ -58,6 +63,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     });
   }
 
+  // 删除其他已访问视图
   function delOtherVisitedViews(view: TagView) {
     return new Promise((resolve) => {
       visitedViews.value = visitedViews.value.filter((v) => {
@@ -67,6 +73,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     });
   }
 
+  // 删除其他缓存视图
   function delOtherCachedViews(view: TagView) {
     const viewName = view.name as string;
     return new Promise((resolve) => {
@@ -74,13 +81,14 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       if (index > -1) {
         cachedViews.value = cachedViews.value.slice(index, index + 1);
       } else {
-        // if index = -1, there is no cached tags
+        // 如果 index = -1，表示没有缓存的标签
         cachedViews.value = [];
       }
       resolve([...cachedViews.value]);
     });
   }
 
+  // 更新已访问视图
   function updateVisitedView(view: TagView) {
     for (let v of visitedViews.value) {
       if (v.path === view.path) {
@@ -90,11 +98,13 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     }
   }
 
+  // 添加视图
   function addView(view: TagView) {
     addVisitedView(view);
     addCachedView(view);
   }
 
+  // 删除视图
   function delView(view: TagView) {
     return new Promise((resolve) => {
       delVisitedView(view);
@@ -106,6 +116,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     });
   }
 
+  // 删除其他视图
   function delOtherViews(view: TagView) {
     return new Promise((resolve) => {
       delOtherVisitedViews(view);
@@ -117,6 +128,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     });
   }
 
+  // 删除左侧视图
   function delLeftViews(view: TagView) {
     return new Promise((resolve) => {
       const currIndex = visitedViews.value.findIndex(
@@ -126,7 +138,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
         return;
       }
       visitedViews.value = visitedViews.value.filter((item, index) => {
-        // affix:true 固定tag，例如“首页”
+        // affix:true 固定标签，例如“首页”
         if (index >= currIndex || (item.meta && item.meta.affix)) {
           return true;
         }
@@ -142,6 +154,8 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       });
     });
   }
+
+  // 删除右侧视图
   function delRightViews(view: TagView) {
     return new Promise((resolve) => {
       const currIndex = visitedViews.value.findIndex(
@@ -151,7 +165,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
         return;
       }
       visitedViews.value = visitedViews.value.filter((item, index) => {
-        // affix:true 固定tag，例如“首页”
+        // affix:true 固定标签，例如“首页”
         if (index <= currIndex || (item.meta && item.meta.affix)) {
           return true;
         }
@@ -168,6 +182,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     });
   }
 
+  // 删除所有视图
   function delAllViews() {
     return new Promise((resolve) => {
       const affixTags = visitedViews.value.filter((tag) => tag.meta?.affix);
@@ -180,6 +195,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     });
   }
 
+  // 删除所有已访问视图
   function delAllVisitedViews() {
     return new Promise((resolve) => {
       const affixTags = visitedViews.value.filter((tag) => tag.meta?.affix);
@@ -188,6 +204,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     });
   }
 
+  // 删除所有缓存视图
   function delAllCachedViews() {
     return new Promise((resolve) => {
       cachedViews.value = [];

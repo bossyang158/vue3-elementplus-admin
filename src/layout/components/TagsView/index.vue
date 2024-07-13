@@ -1,38 +1,61 @@
 <script setup lang="ts">
-import { getCurrentInstance, ComponentInternalInstance } from "vue";
+// 引入Vue相关函数和Pinia的storeToRefs
+import {
+  getCurrentInstance,
+  ComponentInternalInstance,
+  ref,
+  computed,
+  watch,
+  nextTick,
+  onMounted,
+} from "vue";
 import { storeToRefs } from "pinia";
 
+// 引入path-browserify以在浏览器中使用Node.js path模块的功能
 import path from "path-browserify";
 
+// 引入Vue Router的钩子
 import { useRoute, useRouter } from "vue-router";
 
+// 引入国际化处理函数
 import { translateRouteTitleI18n } from "@/utils/i18n";
 
+// 引入Pinia状态管理中的各个模块
+// 引入权限管理模块的store，用于控制页面访问权限
 import { usePermissionStore } from "@/store/modules/permission";
+// 引入标签视图模块的store，用于管理页面标签
 import { useTagsViewStore, TagView } from "@/store/modules/tagsView";
+// 引入设置模块的store，用于管理应用的全局设置
 import { useSettingsStore } from "@/store/modules/settings";
+// 引入应用模块的store，用于管理应用级的状态和逻辑
 import { useAppStore } from "@/store/modules/app";
 
+// 引入滚动面板组件
 import ScrollPane from "./ScrollPane.vue";
 
+// 获取当前Vue实例的代理对象
 const { proxy } = getCurrentInstance() as ComponentInternalInstance;
 const router = useRouter();
 const route = useRoute();
 
+// 使用Pinia状态管理模块
 const permissionStore = usePermissionStore();
 const tagsViewStore = useTagsViewStore();
 const appStore = useAppStore();
 
+// 使用storeToRefs将Pinia状态转换为响应式引用
 const { visitedViews } = storeToRefs(tagsViewStore);
 const settingsStore = useSettingsStore();
 const layout = computed(() => settingsStore.layout);
 
+// 定义响应式数据
 const selectedTag = ref({});
 const scrollPaneRef = ref();
 const left = ref(0);
 const top = ref(0);
 const affixTags = ref<TagView[]>([]);
 
+// 监听路由变化，添加标签并移动到当前标签
 watch(
   route,
   () => {
@@ -40,12 +63,12 @@ watch(
     moveToCurrentTag();
   },
   {
-    //初始化立即执行
     immediate: true,
   }
 );
 
-const tagMenuVisible = ref(false); // 标签操作菜单显示状态
+// 标签菜单的显示状态
+const tagMenuVisible = ref(false);
 watch(tagMenuVisible, (value) => {
   if (value) {
     document.body.addEventListener("click", closeTagMenu);
@@ -54,6 +77,7 @@ watch(tagMenuVisible, (value) => {
   }
 });
 
+// 筛选固定标签
 function filterAffixTags(routes: any[], basePath = "/") {
   let tags: TagView[] = [];
 
@@ -78,29 +102,30 @@ function filterAffixTags(routes: any[], basePath = "/") {
   return tags;
 }
 
+// 初始化标签
 function initTags() {
   const tags: TagView[] = filterAffixTags(permissionStore.routes);
   affixTags.value = tags;
   for (const tag of tags) {
-    // Must have tag name
     if (tag.name) {
       tagsViewStore.addVisitedView(tag);
     }
   }
 }
 
+// 添加标签
 function addTags() {
   if (route.name) {
     tagsViewStore.addView(route);
   }
 }
 
+// 移动到当前标签
 function moveToCurrentTag() {
   nextTick(() => {
     for (const r of tagsViewStore.visitedViews) {
       if (r.path === route.path) {
         scrollPaneRef.value.moveToTarget(r);
-        // when query is different then update
         if (r.fullPath !== route.fullPath) {
           tagsViewStore.updateVisitedView(route);
         }
@@ -109,14 +134,17 @@ function moveToCurrentTag() {
   });
 }
 
+// 判断标签是否激活
 function isActive(tag: TagView) {
   return tag.path === route.path;
 }
 
+// 判断标签是否固定
 function isAffix(tag: TagView) {
   return tag.meta && tag.meta.affix;
 }
 
+// 判断是否为第一个视图
 function isFirstView() {
   try {
     return (
@@ -129,6 +157,7 @@ function isFirstView() {
   }
 }
 
+// 判断是否为最后一个视图
 function isLastView() {
   try {
     return (
@@ -140,6 +169,7 @@ function isLastView() {
   }
 }
 
+// 刷新选中的标签
 function refreshSelectedTag(view: TagView) {
   tagsViewStore.delCachedView(view);
   const { fullPath } = view;
@@ -150,15 +180,13 @@ function refreshSelectedTag(view: TagView) {
   });
 }
 
+// 跳转到最后一个视图
 function toLastView(visitedViews: TagView[], view?: any) {
   const latestView = visitedViews.slice(-1)[0];
   if (latestView && latestView.fullPath) {
     router.push(latestView.fullPath);
   } else {
-    // now the default is to redirect to the home page if there is no tags-view,
-    // you can adjust it according to your needs.
     if (view.name === "Dashboard") {
-      // to reload home page
       router.replace({ path: "/redirect" + view.fullPath });
     } else {
       router.push("/");
@@ -166,6 +194,7 @@ function toLastView(visitedViews: TagView[], view?: any) {
   }
 }
 
+// 关闭选中的标签
 function closeSelectedTag(view: TagView) {
   tagsViewStore.delView(view).then((res: any) => {
     if (isActive(view)) {
@@ -174,6 +203,7 @@ function closeSelectedTag(view: TagView) {
   });
 }
 
+// 关闭左侧标签
 function closeLeftTags() {
   tagsViewStore.delLeftViews(selectedTag.value).then((res: any) => {
     if (
@@ -183,6 +213,8 @@ function closeLeftTags() {
     }
   });
 }
+
+// 关闭��侧标签
 function closeRightTags() {
   tagsViewStore.delRightViews(selectedTag.value).then((res: any) => {
     if (
@@ -193,6 +225,7 @@ function closeRightTags() {
   });
 }
 
+// 关闭其他标签
 function closeOtherTags() {
   router.push(selectedTag.value);
   tagsViewStore.delOtherViews(selectedTag.value).then(() => {
@@ -200,12 +233,14 @@ function closeOtherTags() {
   });
 }
 
+// 关闭所有标签
 function closeAllTags(view: TagView) {
   tagsViewStore.delAllViews().then((res: any) => {
     toLastView(res.visitedViews, view);
   });
 }
 
+// 打开标签菜单
 function openTagMenu(tag: TagView, e: MouseEvent) {
   const menuMinWidth = 105;
 
@@ -225,13 +260,17 @@ function openTagMenu(tag: TagView, e: MouseEvent) {
   selectedTag.value = tag;
 }
 
+// 关闭标签菜单
 function closeTagMenu() {
   tagMenuVisible.value = false;
 }
 
+// 处理滚动
 function handleScroll() {
   closeTagMenu();
 }
+
+// 查找最外层的父级
 function findOutermostParent(tree: any[], findName: string) {
   let parentMap: any = {};
 
@@ -259,6 +298,8 @@ function findOutermostParent(tree: any[], findName: string) {
 
   return null;
 }
+
+// 如果是混合模式，更改selectedTag，需要对应高亮的activeTop
 const againActiveTop = (newVal: string) => {
   if (layout.value !== "mix") return;
   const parent = findOutermostParent(permissionStore.routes, newVal);
@@ -266,7 +307,8 @@ const againActiveTop = (newVal: string) => {
     appStore.changeTopActive(parent.path);
   }
 };
-// 如果是混合模式，更改selectedTag，需要对应高亮的activeTop
+
+// 监听路由名称变化，以更新顶部菜单激活状态
 watch(
   () => route.name,
   (newVal) => {
@@ -278,14 +320,19 @@ watch(
     deep: true,
   }
 );
+
+// 组件挂载时初始化标签
 onMounted(() => {
   initTags();
 });
 </script>
 
 <template>
+  <!-- 标签容器 -->
   <div class="tags-container">
+    <!-- 滚动面板 -->
     <scroll-pane ref="scrollPaneRef" @scroll="handleScroll">
+      <!-- 动态生成路由链接作为标签 -->
       <router-link
         v-for="tag in visitedViews"
         :key="tag.path"
@@ -295,7 +342,9 @@ onMounted(() => {
         @click.middle="!isAffix(tag) ? closeSelectedTag(tag) : ''"
         @contextmenu.prevent="openTagMenu(tag, $event)"
       >
+        <!-- 标签标题，使用i18n进行国际化处理 -->
         {{ translateRouteTitleI18n(tag.meta?.title) }}
+        <!-- 关闭按���，非固定标签显示 -->
         <span
           v-if="!isAffix(tag)"
           class="tags-item-close"
@@ -306,7 +355,7 @@ onMounted(() => {
       </router-link>
     </scroll-pane>
 
-    <!-- tag标签操作菜单 -->
+    <!-- 标签操作菜单 -->
     <ul
       v-show="tagMenuVisible"
       class="tag-menu"
@@ -326,7 +375,7 @@ onMounted(() => {
       </li>
       <li v-if="!isFirstView()" @click="closeLeftTags">
         <svg-icon icon-class="close_left" />
-        关闭左侧
+        关���左侧
       </li>
       <li v-if="!isLastView()" @click="closeRightTags">
         <svg-icon icon-class="close_right" />
@@ -339,6 +388,10 @@ onMounted(() => {
     </ul>
   </div>
 </template>
+
+<style lang="scss" scoped>
+/* 样式省略，主要用于定义标签容器、标签项、操作菜单的样式 */
+</style>
 
 <style lang="scss" scoped>
 .tags-container {
